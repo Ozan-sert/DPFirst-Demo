@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Linq;
-using System.Web;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace DPFirst.UI.Models
+namespace DPFirst.BLL.ViewModel
 {
     public class UserViewModel
     {

@@ -7,19 +7,19 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.UI.WebControls;
-using DPFirst.DAL.Entities;
-using DPFirst.UI.Models;
+using DPFirst.BLL.Services;
+using DPFirst.BLL.ViewModel;
 
 namespace DPFirst.UI.Controllers
 {
     public class UserController : Controller
     {
-        private UsersEntities db = new UsersEntities();
-
+        
+        private UserService userService = new UserService();
         // GET: User
         public ActionResult Index()
         {
-            return View(db.NewUsers.ToList());
+            return View(userService.GetAllUsers());
         }
 
         // GET: User/Details/5
@@ -29,12 +29,15 @@ namespace DPFirst.UI.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            NewUser newUser = db.NewUsers.Find(id);
-            if (newUser == null)
-            {
-                return HttpNotFound();
-            }
-            return View(newUser);
+             // NewUser newUser = db.NewUsers.Find(id);
+                UserViewModel newUser = userService.GetUserById(id);
+                if (newUser == null)
+                {
+                    return HttpNotFound();
+                }
+                return View(newUser);
+            
+            
         }
 
     
@@ -47,15 +50,7 @@ namespace DPFirst.UI.Controllers
         {
             if (ModelState.IsValid)
             {
-                NewUser newUser = new NewUser();
-                newUser.ID = user.ID;
-                newUser.Username=user.Username;
-                newUser.Email = user.Email;
-                newUser.Password = user.Password;   
-
-                
-                db.NewUsers.Add(newUser);
-                db.SaveChanges();
+               userService.CreateUser(user);
                 return RedirectToAction("Index");
             }
             // If ModelState is not valid, return the view with validation errors
@@ -70,7 +65,8 @@ namespace DPFirst.UI.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            NewUser newUser = db.NewUsers.Find(id);
+            // NewUser newUser = db.NewUsers.Find(id);
+            var newUser = userService.GetUserById(id.Value);
             if (newUser == null)
             {
                 return HttpNotFound();
@@ -83,12 +79,11 @@ namespace DPFirst.UI.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ID,Username,Email,Password")] NewUser newUser)
+        public ActionResult Edit([Bind(Include = "ID,Username,Email,Password")] UserViewModel newUser)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(newUser).State = EntityState.Modified;
-                db.SaveChanges();
+                userService.UpdateUser(newUser);  
                 return RedirectToAction("Index");
             }
             return View(newUser);
@@ -101,7 +96,7 @@ namespace DPFirst.UI.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            NewUser newUser = db.NewUsers.Find(id);
+            UserViewModel newUser = userService.GetUserById(id);
             if (newUser == null)
             {
                 return HttpNotFound();
@@ -114,9 +109,7 @@ namespace DPFirst.UI.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            NewUser newUser = db.NewUsers.Find(id);
-            db.NewUsers.Remove(newUser);
-            db.SaveChanges();
+             userService.DeleteUser(id);
             return RedirectToAction("Index");
         }
 
@@ -124,7 +117,7 @@ namespace DPFirst.UI.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                userService.Dispose();
             }
             base.Dispose(disposing);
         }
